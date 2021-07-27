@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SampleCRUD_API.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-
+using System.Web.Http.ModelBinding;
 
 namespace SampleCRUD_API.Controllers
 {
@@ -12,36 +12,61 @@ namespace SampleCRUD_API.Controllers
     [ApiController]
     public class AuthorController : ControllerBase
     {
-        // GET: api/<AuthorController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private readonly IAuthorRepository _repository;
+        public AuthorController(IAuthorRepository repository)
         {
-            return new string[] { "value1", "value2" };
+            _repository = repository;
         }
+        [HttpGet]
+         public async Task<IEnumerable<Author>> Get()
+        {
+            return await _repository.GetList();
 
+           
+        }
         // GET api/<AuthorController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+
+        public async Task<Author> GetBy(int id)
         {
-            return "value";
+            return await _repository.GetBy(id);
         }
 
-        // POST api/<AuthorController>
+        //POST api/<AuthorController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<ActionResult<Author>> Create(Author model)
         {
+            if (ModelState.IsValid) 
+            {
+              var result = await _repository.CreateAuthor(model);
+                return result;
+            }
+            else 
+            {
+                return BadRequest(ModelState);
+            }
         }
 
-        // PUT api/<AuthorController>/5
+       // PUT api/<AuthorController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<ActionResult<Author>> Put(int id, Author model)
         {
+            if (ModelState.IsValid)
+            {
+                var result = await _repository.UpdateAuthor(id,model);
+                return result;
+            }
+            else
+            {
+                return BadRequest(ModelState);
+            }
         }
 
         // DELETE api/<AuthorController>/5
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
+            _repository.DeleteAuthor(id);
         }
     }
 }

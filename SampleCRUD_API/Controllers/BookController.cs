@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SampleCRUD_API.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,36 +13,61 @@ namespace SampleCRUD_API.Controllers
     [ApiController]
     public class BookController : ControllerBase
     {
-        // GET: api/<BookController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private readonly IBookRepository _repository;
+        public BookController(IBookRepository repository)
         {
-            return new string[] { "value1", "value2" };
+            _repository = repository;
+        }
+        [HttpGet]
+        public async Task<IEnumerable<Book>> GetList()
+        {
+            return await _repository.GetList();
         }
 
         // GET api/<BookController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<Book> GetBy(int id)
         {
-            return "value";
+            return await _repository.GetBy(id);
         }
 
         // POST api/<BookController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpPost]
+        public async Task<ActionResult<Book>> Create(Book model)
         {
+            if (ModelState.IsValid)
+            {
+                var result = await _repository.CreateBook(model);
+                return result;
+            }
+            else
+            {
+                return BadRequest(ModelState);
+            }
         }
 
         // PUT api/<BookController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<ActionResult<Book>> Put(int id, Book model)
         {
+            if (ModelState.IsValid)
+            {
+                var result = await _repository.UpdateBook(id, model);
+                return result;
+            }
+            else
+            {
+                return BadRequest(ModelState);
+            }
         }
+
 
         // DELETE api/<BookController>/5
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
+            _repository.DeleteBook(id);
         }
     }
 }
